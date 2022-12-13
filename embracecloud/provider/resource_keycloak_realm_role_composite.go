@@ -23,7 +23,7 @@ func resourceKeycloakRealmRoleComposite() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"role_name": {
+			"parent_role_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -48,7 +48,7 @@ func resourceKeycloakRealmRoleCompositeCreate(ctx context.Context, data *schema.
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
 	realm := data.Get("realm_id").(string)
-	role_name := data.Get("role_name").(string)
+	role_name := data.Get("parent_role_name").(string)
 	composite_client_id, isClient := data.GetOkExists("composite_client_id")
 	composteRoleName := data.Get("composite_role_name").(string)
 
@@ -101,7 +101,7 @@ func resourceKeycloakRealmRoleCompositeDelete(ctx context.Context, data *schema.
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
 	realm := data.Get("realm_id").(string)
-	role_name := data.Get("role_name").(string)
+	role_name := data.Get("parent_role_name").(string)
 	composite_client_id, isClient := data.GetOkExists("composite_client_id")
 	composteRoleName := data.Get("composite_role_name").(string)
 
