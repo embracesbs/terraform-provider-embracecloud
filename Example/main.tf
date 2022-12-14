@@ -10,9 +10,9 @@ terraform {
 }
 provider "embracecloud" {
     keycloack_enabled = true
-    keycloak_client_id = "admin-cli"
-    keycloak_client_secret = 
-    keycloak_url = "https://auth.dev.embracecloud.io/auth"
+    keycloak_client_id =""
+    keycloak_client_secret = ""
+    keycloak_url =""
   
 }
 
