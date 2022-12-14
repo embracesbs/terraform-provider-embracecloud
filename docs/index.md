@@ -17,7 +17,7 @@ description: |-
 
 ### Optional
 
-- `keycloack_enabled` (Boolean) Enable keycloak functionality within the provider
+- `keycloak_enabled` (Boolean) Enable keycloak functionality within the provider
 - `keycloak_client_id` (String) client id
 - `keycloak_client_secret` (String) client secret
 - `keycloak_url` (String) url of the keycloack intance

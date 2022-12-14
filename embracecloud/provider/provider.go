@@ -13,7 +13,7 @@ const MULTIVALUE_ATTRIBUTE_SEPARATOR = "##"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"keycloack_enabled": {
+			"keycloak_enabled": {
 				Type:        schema.TypeBool,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("EMBRACECLOUD_KEYCLOACK_ENABLED", false),
@@ -55,7 +55,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	embraceCloudClient := embracecloud.BuildClient()
 
-	if d.Get("keycloack_enabled").(bool) == true {
+	if d.Get("keycloak_enabled").(bool) == true {
 		embraceCloudClient.InitKeycloak(
 			ctx,
 			d.Get("keycloak_url").(string),
