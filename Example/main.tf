@@ -44,14 +44,14 @@ resource "embracecloud_realm_role" "comp2" {
 
 resource "embracecloud_realm_role_composite" "test" {
   realm_id = "embracecloud"
-  role_name = embracecloud_realm_role23.comp1.name
+  parent_role_name = embracecloud_realm_role23.comp1.name
   composite_role_name = embracecloud_realm_role23.comp2.name
 }
 
 
 resource "embracecloud_realm_role_composite" "test_client_role" {
   realm_id = "embracecloud"
-  role_name = embracecloud_realm_role23.comp1.name
+  parent_role_name = embracecloud_realm_role23.comp1.name
   composite_client_id = "5a113750-8100-4e2d-ac63-20f5d1315028"
   composite_role_name = "Huurder"
 }
