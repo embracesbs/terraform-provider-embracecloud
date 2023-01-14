@@ -33,6 +33,7 @@ func resourceKeycloakClientRole() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -82,7 +83,24 @@ func resourceKeycloakClientRoleCreate(ctx context.Context, data *schema.Resource
 	role, realm := mapClientRole(data)
 	clientId := data.Get("client_id").(string)
 
-	id, err := keycloakCLient.CreateClientRole(ctx, token.AccessToken, realm, clientId,
+	var params = gocloak.GetClientsParams{
+		ClientID: &clientId,
+	}
+
+	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(clients) < 1 {
+		return diag.Errorf("no client found")
+	}
+
+	if len(clients) > 1 {
+		return diag.Errorf("multiple clients found")
+	}
+
+	id, err := keycloakCLient.CreateClientRole(ctx, token.AccessToken, realm, *clients[0].ID,
 		role)
 
 	if err != nil {
@@ -91,7 +109,7 @@ func resourceKeycloakClientRoleCreate(ctx context.Context, data *schema.Resource
 
 	data.SetId(id)
 
-	return resourceKeycloakRealmRoleRead(ctx, data, meta)
+	return resourceKeycloakClientRoleRead(ctx, data, meta)
 
 }
 
@@ -99,13 +117,30 @@ func resourceKeycloakClientRoleRead(ctx context.Context, data *schema.ResourceDa
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
 	clientId := data.Get("client_id").(string)
+	_, realm := mapClientRole(data)
 
-	role, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, data.Get("realm_id").(string), clientId, data.Id())
+	var params = gocloak.GetClientsParams{
+		ClientID: &clientId,
+	}
+	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(clients) < 1 {
+		return diag.Errorf("no client found")
+	}
+
+	if len(clients) > 1 {
+		return diag.Errorf("multiple clients found")
+	}
+
+	readRole, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *clients[0].ID, data.Id())
 	if err != nil {
 		return diag.FromErr((err))
 	}
 
-	mapFromRoleToData(data, *role)
+	mapFromRoleToData(data, *readRole)
 	return nil
 }
 
@@ -113,14 +148,31 @@ func resourceKeycloakClientRoleUpdate(ctx context.Context, data *schema.Resource
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
 	role, realm := mapRole(data)
+	clientId := data.Get("client_id").(string)
 
-	err := keycloakCLient.UpdateRole(ctx, token.AccessToken, realm, *role.ID, role)
+	var params = gocloak.GetClientsParams{
+		ClientID: &clientId,
+	}
+	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(clients) < 1 {
+		return diag.Errorf("no client found")
+	}
+
+	if len(clients) > 1 {
+		return diag.Errorf("multiple clients found")
+	}
+
+	err = keycloakCLient.UpdateRole(ctx, token.AccessToken, realm, *clients[0].ID, role)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceKeycloakRealmRoleRead(ctx, data, meta)
+	return resourceKeycloakClientRoleRead(ctx, data, meta)
 }
 
 func resourceKeycloakClientRoleDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -128,7 +180,27 @@ func resourceKeycloakClientRoleDelete(ctx context.Context, data *schema.Resource
 	keycloakCLient, token := client.GetKeycloakClient()
 	role, realm := mapRole(data)
 	clientId := data.Get("client_id").(string)
-	keycloakCLient.DeleteClientRole(ctx, token.AccessToken, realm, clientId, *role.ID)
+	var params = gocloak.GetClientsParams{
+		ClientID: &clientId,
+	}
+
+	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(clients) < 1 {
+		return diag.Errorf("no client found")
+	}
+
+	if len(clients) > 1 {
+		return diag.Errorf("multiple clients found")
+	}
+	err = keycloakCLient.DeleteClientRole(ctx, token.AccessToken, realm, *clients[0].ID, *role.ID)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }
 

@@ -60,8 +60,29 @@ func resourceKeycloakRealmRoleCompositeCreate(ctx context.Context, data *schema.
 	var compRole []gocloak.Role
 
 	if isClient == true {
+		var clientId = composite_client_id.(string)
+		var params = gocloak.GetClientsParams{
+			ClientID: &clientId,
+		}
 
-		compRoleResponse, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, composite_client_id.(string), composteRoleName)
+		clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(clients) < 1 {
+			return diag.Errorf("no client found")
+		}
+
+		if len(clients) > 1 {
+			return diag.Errorf("multiple clients found")
+		}
+
+		res, err := keycloakCLient.GetClient(ctx, token.AccessToken, realm, *clients[0].ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		compRoleResponse, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *res.ID, composteRoleName)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -113,7 +134,25 @@ func resourceKeycloakRealmRoleCompositeDelete(ctx context.Context, data *schema.
 	var compRole []gocloak.Role
 
 	if isClient == true {
-		compRoleResponse, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, composite_client_id.(string), composteRoleName)
+		var clientId = composite_client_id.(string)
+		var params = gocloak.GetClientsParams{
+			ClientID: &clientId,
+		}
+
+		clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(clients) < 1 {
+			return diag.Errorf("no client found")
+		}
+
+		if len(clients) > 1 {
+			return diag.Errorf("multiple clients found")
+		}
+
+		compRoleResponse, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *clients[0].ID, composteRoleName)
 		if err != nil {
 			return diag.FromErr(err)
 		}
