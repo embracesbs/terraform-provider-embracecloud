@@ -156,7 +156,7 @@ func resourceKeycloakClientRoleCompositeDelete(ctx context.Context, data *schema
 		return diag.FromErr(err)
 	}
 	if len(clients) < 1 {
-		return diag.Errorf("no client found")
+		return diag.Errorf("client: " + clientId + "not found in realm: " + realm)
 	}
 
 	if len(clients) > 1 {
@@ -182,7 +182,7 @@ func resourceKeycloakClientRoleCompositeDelete(ctx context.Context, data *schema
 			return diag.FromErr(err)
 		}
 		if len(clients) < 1 {
-			return diag.Errorf("no client found")
+			return diag.Errorf("client: " + clientId + "not found in realm: " + realm)
 		}
 
 		if len(clients) > 1 {
