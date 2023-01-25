@@ -103,8 +103,18 @@ func resourceKeycloakClientRoleCreate(ctx context.Context, data *schema.Resource
 	id, err := keycloakCLient.CreateClientRole(ctx, token.AccessToken, realm, *clients[0].ID,
 		role)
 
-	if err != nil {
-		return diag.FromErr((err))
+	if strings.Contains(err.Error(), "409") {
+		existingRole, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *clients[0].ID, *role.Name)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		id = *existingRole.Name
+
+	} else {
+		if err != nil {
+			return diag.FromErr((err))
+		}
 	}
 
 	data.SetId(id)
