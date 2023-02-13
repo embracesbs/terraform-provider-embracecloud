@@ -105,7 +105,7 @@ func resourceKeycloakClientRoleCreate(ctx context.Context, data *schema.Resource
 		role)
 
 	if err != nil {
-		return diag.Errorf("failed to create client role %s in client %s in realm %s error -> %s", *role.Name, clientId, realm)
+		return diag.Errorf("failed to create client role %s in client %s in realm %s error -> %s", *role.Name, clientId, realm, err.Error())
 	}
 
 	data.SetId(id)
