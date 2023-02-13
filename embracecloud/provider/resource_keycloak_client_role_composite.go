@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/embracesbs/terraform-provider-embracecloud/embracecloud"
@@ -65,10 +66,10 @@ func resourceKeycloakClientRoleCompositeCreate(ctx context.Context, data *schema
 	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("cannot find client %s in realm %s", clientId, realm))
 	}
 	if len(clients) < 1 {
-		return diag.Errorf("no client found")
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 	}
 
 	if len(clients) > 1 {
@@ -91,10 +92,10 @@ func resourceKeycloakClientRoleCompositeCreate(ctx context.Context, data *schema
 		compClients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf(fmt.Sprintf("cannot find client %s in realm %s", clientId, realm))
 		}
 		if len(clients) < 1 {
-			return diag.Errorf("no client found")
+			return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 		}
 
 		if len(clients) > 1 {
@@ -103,26 +104,28 @@ func resourceKeycloakClientRoleCompositeCreate(ctx context.Context, data *schema
 
 		compRoleResponse, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *compClients[0].ID, composteRoleName)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf(fmt.Sprintf("Could not find client role in client %s with name %s in realm %s error -> %s", *compClients[0].ID, composteRoleName, realm, err.Error()))
 		}
 
 		compRole = append(compRole, *compRoleResponse)
 
 		err = keycloakCLient.AddClientRoleComposite(ctx, token.AccessToken, realm, *role.ID, compRole)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf(fmt.Sprintf("Cannot add composite client role %s from client %s in realm %s error -> %s", *compRole[0].Name, clientId, realm, err.Error()))
 		}
 
 	} else {
 		compRoleResponse, err := keycloakCLient.GetRealmRole(ctx, token.AccessToken, realm, composteRoleName)
 		if err != nil {
-			return diag.FromErr(err)
+
+			return diag.Errorf(fmt.Sprintf("Could not find realm role %s in realm %s error -> %s", composteRoleName, realm, err.Error()))
 		}
 
 		compRole = append(compRole, *compRoleResponse)
 		err = keycloakCLient.AddRealmRoleComposite(ctx, token.AccessToken, data.Get("realm_id").(string), *role.Name, compRole)
 		if err != nil {
-			return diag.FromErr(err)
+
+			return diag.Errorf(fmt.Sprintf("Cannot add composite %s to realmrole %s in realm %s error -> %s", *compRole[0].Name, *role.Name, realm, err.Error()))
 		}
 	}
 
@@ -153,10 +156,10 @@ func resourceKeycloakClientRoleCompositeDelete(ctx context.Context, data *schema
 	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("cannot find client %s in realm %s", clientId, realm))
 	}
 	if len(clients) < 1 {
-		return diag.Errorf("client: " + clientId + "not found in realm: " + realm)
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 	}
 
 	if len(clients) > 1 {
@@ -179,10 +182,11 @@ func resourceKeycloakClientRoleCompositeDelete(ctx context.Context, data *schema
 		compClients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 		if err != nil {
-			return diag.FromErr(err)
+
+			return diag.Errorf(fmt.Sprintf("Could not find client %s in realm %s error -> %s", clientId, realm, err.Error()))
 		}
 		if len(clients) < 1 {
-			return diag.Errorf("client: " + clientId + "not found in realm: " + realm)
+			return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 		}
 
 		if len(clients) > 1 {
@@ -190,24 +194,30 @@ func resourceKeycloakClientRoleCompositeDelete(ctx context.Context, data *schema
 		}
 		compRoleResponse, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *compClients[0].ID, composteRoleName)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf(fmt.Sprintf("Could not find client role in client %s with name %s in realm %s error -> %s", clientId, composteRoleName, realm, err.Error()))
 		}
 
 		compRole = append(compRole, *compRoleResponse)
 
 		err = keycloakCLient.DeleteClientRoleComposite(ctx, token.AccessToken, realm, *role.ID, compRole)
 		if err != nil {
-			return diag.FromErr(err)
+
+			return diag.Errorf(fmt.Sprintf("Cannot delete composite client role %s from client %s in realm %s error -> %s", *compRole[0].Name, clientId, realm, err.Error()))
 		}
 
 	} else {
 		compRoleResponse, err := keycloakCLient.GetRealmRole(ctx, token.AccessToken, realm, composteRoleName)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf(fmt.Sprintf("Could not find realm role %s in realm %s error -> %s", composteRoleName, realm, err.Error()))
 		}
 
 		compRole = append(compRole, *compRoleResponse)
-		keycloakCLient.DeleteRealmRoleComposite(ctx, token.AccessToken, realm, *role.Name, compRole)
+
+		err = keycloakCLient.DeleteRealmRoleComposite(ctx, token.AccessToken, realm, *role.Name, compRole)
+		if err != nil {
+			return diag.Errorf(fmt.Sprintf("Could not delete composite role %s from realmrole %s in realm %s error -> %s", *compRole[0].Name, *role.Name, realm, err.Error()))
+
+		}
 	}
 	return nil
 }

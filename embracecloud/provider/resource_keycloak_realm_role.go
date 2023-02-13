@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/Nerzal/gocloak/v12"
@@ -83,7 +84,7 @@ func resourceKeycloakRealmRoleCreate(ctx context.Context, data *schema.ResourceD
 		role)
 
 	if err != nil {
-		return diag.FromErr((err))
+		return diag.Errorf(fmt.Sprintf("could not create realm role %s in realm %s error -> %s", *role.Name, realm, err.Error()))
 	}
 
 	data.SetId(id)
@@ -98,7 +99,7 @@ func resourceKeycloakRealmRoleRead(ctx context.Context, data *schema.ResourceDat
 
 	role, err := keycloakCLient.GetRealmRole(ctx, token.AccessToken, data.Get("realm_id").(string), data.Id())
 	if err != nil {
-		return diag.FromErr((err))
+		return diag.Errorf(fmt.Sprint("failed to get realm role %s in realm %s error -> %s", role.Name, data.Get("realm_id").(string), err.Error()))
 	}
 
 	mapFromRoleToData(data, *role)
@@ -113,7 +114,7 @@ func resourceKeycloakRealmRoleUpdate(ctx context.Context, data *schema.ResourceD
 	err := keycloakCLient.UpdateRealmRole(ctx, token.AccessToken, realm, *role.ID, role)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("could not update realm role %s in realm %s error -> %s", *role.Name, realm, err.Error()))
 	}
 
 	return resourceKeycloakRealmRoleRead(ctx, data, meta)
@@ -123,7 +124,10 @@ func resourceKeycloakRealmRoleDelete(ctx context.Context, data *schema.ResourceD
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
 	role, realm := mapRole(data)
-	keycloakCLient.DeleteRealmRole(ctx, token.AccessToken, realm, *role.ID)
+	err := keycloakCLient.DeleteRealmRole(ctx, token.AccessToken, realm, *role.ID)
+	if err != nil {
+		return diag.Errorf(fmt.Sprintf("could not delete realm role %s in realm %s error -> %s", *role.Name, realm, err.Error()))
+	}
 	return nil
 }
 
