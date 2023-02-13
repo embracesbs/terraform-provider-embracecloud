@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/Nerzal/gocloak/v12"
@@ -90,10 +91,10 @@ func resourceKeycloakClientRoleCreate(ctx context.Context, data *schema.Resource
 	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("cannot find client %s in realm %s", clientId, realm))
 	}
 	if len(clients) < 1 {
-		return diag.Errorf("no client found")
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 	}
 
 	if len(clients) > 1 {
@@ -104,7 +105,7 @@ func resourceKeycloakClientRoleCreate(ctx context.Context, data *schema.Resource
 		role)
 
 	if err != nil {
-		return diag.FromErr((err))
+		return diag.Errorf("failed to create client role %s in client %s in realm %s error -> %s", *role.Name, clientId, realm, err.Error())
 	}
 
 	data.SetId(id)
@@ -125,10 +126,10 @@ func resourceKeycloakClientRoleRead(ctx context.Context, data *schema.ResourceDa
 	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("cannot find client %s in realm %s", clientId, realm))
 	}
 	if len(clients) < 1 {
-		return diag.Errorf("no client found")
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 	}
 
 	if len(clients) > 1 {
@@ -137,7 +138,7 @@ func resourceKeycloakClientRoleRead(ctx context.Context, data *schema.ResourceDa
 
 	readRole, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *clients[0].ID, data.Id())
 	if err != nil {
-		return diag.FromErr((err))
+		return diag.Errorf(fmt.Sprintf("Could not find client role in client %s with name %s in realm %s error -> %s", clientId, data.Id(), realm, err.Error()))
 	}
 
 	mapFromRoleToData(data, *readRole)
@@ -156,10 +157,10 @@ func resourceKeycloakClientRoleUpdate(ctx context.Context, data *schema.Resource
 	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("cannot find client %s in realm %s", clientId, realm))
 	}
 	if len(clients) < 1 {
-		return diag.Errorf("no client found")
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 	}
 
 	if len(clients) > 1 {
@@ -169,7 +170,7 @@ func resourceKeycloakClientRoleUpdate(ctx context.Context, data *schema.Resource
 	err = keycloakCLient.UpdateRole(ctx, token.AccessToken, realm, *clients[0].ID, role)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("failed to update client role %s for client %s in realm %s error -> %s", clientId, *role.Name, realm, err.Error()))
 	}
 
 	return resourceKeycloakClientRoleRead(ctx, data, meta)
@@ -187,10 +188,10 @@ func resourceKeycloakClientRoleDelete(ctx context.Context, data *schema.Resource
 	clients, err := keycloakCLient.GetClients(ctx, token.AccessToken, realm, params)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("cannot find client %s in realm %s", clientId, realm))
 	}
 	if len(clients) < 1 {
-		return diag.Errorf("no client found")
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s", clientId, realm))
 	}
 
 	if len(clients) > 1 {
@@ -199,7 +200,7 @@ func resourceKeycloakClientRoleDelete(ctx context.Context, data *schema.Resource
 	err = keycloakCLient.DeleteClientRole(ctx, token.AccessToken, realm, *clients[0].ID, *role.ID)
 
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf(fmt.Sprintf("failed to delete client role %s for client %s in realm %s error -> %s", clientId, *role.Name, realm, err.Error()))
 	}
 	return nil
 }
