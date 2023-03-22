@@ -102,7 +102,7 @@ func resourceKeycloakRealmRoleRead(ctx context.Context, data *schema.ResourceDat
 		return diag.Errorf(fmt.Sprint("failed to get realm role %s in realm %s error -> %s", role.Name, data.Get("realm_id").(string), err.Error()))
 	}
 
-	mapFromRoleToData(data, *role)
+	//mapFromRoleToData(data, *role)
 	return nil
 }
 
