@@ -99,10 +99,16 @@ func resourceKeycloakRealmRoleRead(ctx context.Context, data *schema.ResourceDat
 
 	role, err := keycloakCLient.GetRealmRole(ctx, token.AccessToken, data.Get("realm_id").(string), data.Id())
 	if err != nil {
-		return diag.Errorf(fmt.Sprint("failed to get realm role %s in realm %s error -> %s", role.Name, data.Get("realm_id").(string), err.Error()))
+		if strings.Contains(err.Error(), "404") {
+			data.SetId("")
+		} else {
+			return diag.Errorf(fmt.Sprint("failed to get realm role error -> %s"), err.Error())
+		}
+
+	} else {
+		mapFromRoleToData(data, *role)
 	}
 
-	//mapFromRoleToData(data, *role)
 	return nil
 }
 
