@@ -32,6 +32,11 @@ func resourceKeycloakRealmRole() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"keycloak_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+				ForceNew: false,
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -73,6 +78,7 @@ func mapFromRoleToData(data *schema.ResourceData, role gocloak.Role) {
 	data.Set("name", role.Name)
 	data.Set("description", role.Description)
 	data.Set("attributes", attributes)
+	data.Set("keycloak_id", role.ID)
 }
 
 func resourceKeycloakRealmRoleCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
