@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-
+	"strings"
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/embracesbs/terraform-provider-embracecloud/embracecloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -155,6 +155,11 @@ func resourceKeycloakRealmRoleCompositeDelete(ctx context.Context, data *schema.
 
 		compRoleResponse, err := keycloakCLient.GetClientRole(ctx, token.AccessToken, realm, *clients[0].ID, composteRoleName)
 		if err != nil {
+			if strings.Contains(err.Error(), "404") {
+				//client role is already removed outside terraform logic the composite cannot exist so we delete the resource
+				return nil
+			}
+			
 			return diag.Errorf(fmt.Sprintf("Could not find client role in client %s with name %s in realm %s error -> %s", clientId, composteRoleName, realm, err.Error()))
 		}
 
