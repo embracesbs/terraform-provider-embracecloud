@@ -97,7 +97,7 @@ func resourceKeycloakServiceAccountDetailsRead(ctx context.Context, data *schema
 
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
-	userId := data.Get("id").(string)
+	userId := data.Id()
 	realm := data.Get("realm_id").(string)
 
 	user, err := keycloakCLient.GetUserByID(ctx, token.AccessToken, realm, userId)
@@ -115,7 +115,7 @@ func resourceKeycloakServiceAccountDetailsDelete(ctx context.Context, data *sche
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
 	realm := data.Get("realm_id").(string)
-	userId := data.Get("id").(string)
+	userId := data.Id()
 
 	data.Set("first_name", "")
 	data.Set("last_name", "")
