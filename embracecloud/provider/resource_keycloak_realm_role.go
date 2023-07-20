@@ -71,7 +71,8 @@ func mapRole(data *schema.ResourceData) (rl gocloak.Role, realm string) {
 func mapFromRoleToData(data *schema.ResourceData, role gocloak.Role) {
 	attributes := map[string]string{}
 	for k, v := range *role.Attributes {
-		attributes[k] = strings.Join(v, MULTIVALUE_ATTRIBUTE_SEPARATOR)
+		attributes[k] =
+			strings.Join(v, MULTIVALUE_ATTRIBUTE_SEPARATOR)
 	}
 
 	data.Set("realm_id", data.Get("realm_id").(string))
