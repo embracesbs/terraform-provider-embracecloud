@@ -53,7 +53,7 @@ func resourceKeycloakServiceAccountDetailsCreate(ctx context.Context, data *sche
 	client := meta.(*embracecloud.EmbraceCloudClient)
 	keycloakCLient, token := client.GetKeycloakClient()
 	realm := data.Get("realm_id").(string)
-	clientId := data.Get("client_name").(string)
+	clientId := data.Get("client_id").(string)
 	firstName := data.Get("first_name").(string)
 	lastName := data.Get("last_name").(string)
 
