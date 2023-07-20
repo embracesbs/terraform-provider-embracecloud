@@ -32,15 +32,18 @@ func resourceKeycloakServiceAccountDetails() *schema.Resource {
 			"first_name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"last_name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"username": {
 				Type:     schema.TypeString,
 				Computed: true,
+				
 			},
 		},
 	}
