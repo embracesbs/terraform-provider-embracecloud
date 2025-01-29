@@ -115,6 +115,22 @@ func resourceKeycloakRealmRoleCompositeCreate(ctx context.Context, data *schema.
 }
 
 func resourceKeycloakRealmRoleCompositeRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*embracecloud.EmbraceCloudClient)
+	keycloakClient, token := client.GetKeycloakClient()
+	realm := data.Get("realm_id").(string)
+	roleName := data.Get("parent_role_name").(string)
+	compositeRoleName := data.Get("composite_role_name").(string)
+
+	role, err := keycloakClient.GetRealmRole(ctx, token.AccessToken, realm, roleName)
+	if err != nil {
+		return diag.Errorf("Parent role %s not found in realm %s. Marking resource for recreation.", roleName, realm)
+	}
+
+	compRole, err := keycloakClient.GetRealmRole(ctx, token.AccessToken, realm, compositeRoleName)
+	if err != nil {
+		data.SetId("") 
+
+	}
 
 	return nil
 }
