@@ -151,17 +151,38 @@ func resourceKeycloakClientRoleCompositeRead(ctx context.Context, data *schema.R
 
 	clients, err := keycloakClient.GetClients(ctx, token.AccessToken, realm, params)
 	if err != nil || len(clients) < 1 {
-		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s. Marking resource for recreation.", clientId, realm))
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s.", clientId, realm))
 	}
 
 	if len(clients) > 1 {
 		return diag.Errorf("Multiple clients found for ID %s in realm %s", clientId, realm)
 	}
 
+
 	role, err := keycloakClient.GetClientRole(ctx, token.AccessToken, realm, *clients[0].ID, roleName)
 	if err != nil {
-		data.SetId("")
+		return diag.Errorf(fmt.Sprintf("Role %s not found in client %s, realm %s.", roleName, clientId, realm))
 	}
+
+	var compRole *gocloak.Role
+
+
+	compClientId := compositeClientId.(string)
+	var compParams = gocloak.GetClientsParams{
+		ClientID: &compClientId,
+	}
+
+	compClients, err := keycloakClient.GetClients(ctx, token.AccessToken, realm, compParams)
+	if err != nil || len(compClients) < 1 {
+		return diag.Errorf(fmt.Sprintf("client %s not found in realm %s.", compClientId, realm))
+	}
+
+	compRole, err = keycloakClient.GetClientRole(ctx, token.AccessToken, realm, *compClients[0].ID, compositeRoleName)
+	if err != nil {
+		data.SetId("") 
+	}
+
+
 	return nil
 }
 
