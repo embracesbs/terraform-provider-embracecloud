@@ -136,7 +136,32 @@ func resourceKeycloakClientRoleCompositeCreate(ctx context.Context, data *schema
 }
 
 func resourceKeycloakClientRoleCompositeRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*embracecloud.EmbraceCloudClient)
+	keycloakClient, token := client.GetKeycloakClient()
+	realm := data.Get("realm_id").(string)
+	roleName := data.Get("parent_role_name").(string)
+	clientId := data.Get("client_id").(string)
+	compositeClientId, isClient := data.GetOkExists("composite_client_id")
+	compositeRoleName := data.Get("composite_role_name").(string)
 
+	// Fetch Client
+	var params = gocloak.GetClientsParams{
+		ClientID: &clientId,
+	}
+
+	clients, err := keycloakClient.GetClients(ctx, token.AccessToken, realm, params)
+	if err != nil || len(clients) < 1 {
+		return diag.Errorf(fmt.Sprintf("Client %s not found in realm %s. Marking resource for recreation.", clientId, realm))
+	}
+
+	if len(clients) > 1 {
+		return diag.Errorf("Multiple clients found for ID %s in realm %s", clientId, realm)
+	}
+
+	role, err := keycloakClient.GetClientRole(ctx, token.AccessToken, realm, *clients[0].ID, roleName)
+	if err != nil {
+		data.SetId("")
+	}
 	return nil
 }
 
