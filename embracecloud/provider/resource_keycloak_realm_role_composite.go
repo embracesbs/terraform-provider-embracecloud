@@ -123,7 +123,7 @@ func resourceKeycloakRealmRoleCompositeRead(ctx context.Context, data *schema.Re
 
 	role, err := keycloakClient.GetRealmRole(ctx, token.AccessToken, realm, roleName)
 	if err != nil {
-		return diag.Errorf("Parent role %s not found in realm %s. Marking resource for recreation.", roleName, realm)
+		return diag.Errorf("Parent role %s not found in realm %s.", roleName, realm)
 	}
 
 	compRole, err := keycloakClient.GetRealmRole(ctx, token.AccessToken, realm, compositeRoleName)
